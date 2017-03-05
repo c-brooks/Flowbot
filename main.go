@@ -4,7 +4,6 @@ package main
 
 import (
   "net/http"
-  "golang.org/x/net/html"
   "fmt"
   "io/ioutil"
   "encoding/json"
@@ -13,12 +12,16 @@ import (
 )
 
 func main() {
-  urlArr := GetSongsPath()
+  // urlArr := GetSongsPath()
 
-  for _, songEndpoint := range urlArr {
-    GetSongLyrics(songEndpoint)
+  // for _, songEndpoint := range urlArr {
+    // GetSongLyrics(songEndpoint)
+  // }
+  
+  // Iterate over tracks
+  for _, track := range scrapeTrackList("http://www.azlyrics.com/m/migos.html") {
+    fmt.Println(track)
   }
-  fmt.Println(urlArr)
 }
 
 // GetSongsPath
@@ -78,6 +81,20 @@ func GetSongLyrics(apiPath string)  {
    websiteUrl := "https://genius.com" + song.(map[string]interface{})["path"].(string)
    fmt.Println(" === SCRAPING", websiteUrl, "===")
    scrapeLyrics(websiteUrl)
+}
+
+// Scrape Migos songs from http://www.azlyrics.com/m/migos.html
+func scrapeTrackList(websiteUrl string) []string {
+  doc, err := goquery.NewDocument(websiteUrl)
+  if err != nil {
+    panic(err.Error())
+  }
+
+  var trackList []string
+  doc.Find("#listAlbum > a").Each(func (i int, s *goquery.Selection) {
+    trackList = append(trackList, s.Text())
+  })
+  return trackList
 }
 
 // Scrape lyrics using goQuery
