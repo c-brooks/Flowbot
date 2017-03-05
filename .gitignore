@@ -1,3 +1,8 @@
+# Ignore secrets
+setup.sh
+
+
+## Standard go gitignore
 # Compiled Object files, Static and Dynamic libs (Shared Objects)
 *.o
 *.a
