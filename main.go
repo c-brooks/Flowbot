@@ -4,16 +4,25 @@ package main
 
 import (
   "fmt"
-  "github.com/PuerkitoBio/goquery"
+  "log"
+  "os"
   "strings"
+  "github.com/PuerkitoBio/goquery"
 )
 
 func main() {
+  var artistName string
+  if len(os.Args) > 1 {
+    artistName = os.Args[1]
+  } else {
+    // Falback to a classic
+    artistName = "migos"
+  }
 
   // Iterate over tracks
-  for _, track := range scrapeTrackList("http://www.azlyrics.com/m/migos.html") {
+  for _, track := range scrapeTrackList("http://www.azlyrics.com/" + string(artistName[0]) + "/" + artistName + ".html") {
     if track != "" {
-      geniusUrl := "https://genius.com/Migos-" + dasherize(track) + "-lyrics"
+      geniusUrl := "https://genius.com/" + artistName + "-" + dasherize(track) + "-lyrics"
       scrapeLyrics(geniusUrl)
     }
   }
@@ -22,6 +31,7 @@ func main() {
 // Scrape Migos songs from http://www.azlyrics.com/m/migos.html
 // Return a list of tracks
 func scrapeTrackList(websiteUrl string) []string {
+  fmt.Println("GET [", websiteUrl, "]\n")
   doc, err := goquery.NewDocument(websiteUrl)
   if err != nil {
     panic(err.Error())
@@ -31,6 +41,9 @@ func scrapeTrackList(websiteUrl string) []string {
   doc.Find("#listAlbum > a").Each(func (i int, s *goquery.Selection) {
     trackList = append(trackList, s.Text())
   })
+  if len(trackList) == 0 {
+    log.Fatal("No tracks found!")
+  }
   return trackList
 }
 
@@ -38,7 +51,7 @@ func scrapeTrackList(websiteUrl string) []string {
 // Scrape lyrics from Genius
 // Print to standard output
 func scrapeLyrics(websiteUrl string) {
-  fmt.Println("\n === Scraping from", websiteUrl, "\n")
+  fmt.Println("\t GET [", websiteUrl, "]\n")
   doc, err := goquery.NewDocument(websiteUrl)
   if err != nil {
     panic(err.Error())

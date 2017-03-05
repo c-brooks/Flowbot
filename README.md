@@ -13,5 +13,5 @@ go get -t -u -v ./...
 ## Running
 Start the program with
 ```
-go run main.go
+go run main.go [artistName]
 ```
