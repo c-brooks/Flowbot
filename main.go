@@ -12,7 +12,7 @@ import (
   "github.com/PuerkitoBio/goquery"
 )
 
-func main()  {
+func main() {
   urlArr := GetSongsPath()
 
   for _, songEndpoint := range urlArr {
@@ -22,7 +22,7 @@ func main()  {
 }
 
 // GetSongsPath
-// Returns
+// Returns an array of URLs for Migos songs
 func GetSongsPath() []string {
   var data interface{}
 
@@ -80,58 +80,12 @@ func GetSongLyrics(apiPath string)  {
    scrapeLyrics(websiteUrl)
 }
 
-
+// Scrape lyrics using goQuery
 func scrapeLyrics(websiteUrl string) {
   doc, err := goquery.NewDocument(websiteUrl)
   if err != nil {
     panic(err.Error())
   }
-  // Find the 
+
   fmt.Println(doc.Find(".lyrics").Text())
 }
-
-
-func scrapeLyrics1234(websiteUrl string) {
-  // var data interface{}
-  res, err := http.Get(websiteUrl)
-  if err != nil {
-    panic(err.Error())
-  }
-
-  fmt.Println(res)
-  z := html.NewTokenizer(res.Body)
-
-  for {
-    tt := z.Next()
-    switch {
-    case tt == html.ErrorToken:
-      break
-
-    case tt == html.StartTagToken:
-      // nop//t := z.Token()
-
-    for _, attr := range z.Token().Attr {
-      // fmt.Println(attr)
-      if attr.Key == "class" {
-        if (attr.Val == "lyrics") {
-          z.Next()
-          z.Next()
-          fmt.Println(z.Text())
-        }
-      }
-    }
-  }
-}
-}
-
-//    switch {
-//    case el == html.ErrorToken:
-//    	// End of the document, we're done
-//        return
-//    case el == html.StartTagToken:
-//
-//     //  t := z.Token()
-//
-//        default: fmt.Println(z.Token().Val)
-//    }
-// }
