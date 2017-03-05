@@ -3,11 +3,7 @@
 package main
 
 import (
-  "net/http"
   "fmt"
-  "io/ioutil"
-  "encoding/json"
-  "os"
   "github.com/PuerkitoBio/goquery"
   "strings"
 )
