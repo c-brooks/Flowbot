@@ -1,13 +1,17 @@
 # bADLIB
 Machine learning ad-lib generator for rap songs.
 
+## Dependencies
+* **github.com/PuerkitoBio/goquery** _for scraping data_
+
 ## Setup
-* Dependencies:
+Dependencies: Download all of them with
 ```
-go get github.com/PuerkitoBio/goquery
+go get -t -u -v ./...
 ```
 
-Start the program with 
+## Running
+Start the program with
 ```
 go run main.go
 ```
