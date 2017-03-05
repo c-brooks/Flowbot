@@ -9,18 +9,17 @@ import (
   "encoding/json"
   "os"
   "github.com/PuerkitoBio/goquery"
+  "strings"
 )
 
 func main() {
-  // urlArr := GetSongsPath()
 
-  // for _, songEndpoint := range urlArr {
-    // GetSongLyrics(songEndpoint)
-  // }
-  
   // Iterate over tracks
   for _, track := range scrapeTrackList("http://www.azlyrics.com/m/migos.html") {
-    fmt.Println(track)
+    if track != "" {
+      geniusUrl := "https://genius.com/Migos-" + dasherize(track) + "-lyrics"
+      scrapeLyrics(geniusUrl)
+    }
   }
 }
 
@@ -56,13 +55,14 @@ func GetSongsPath() []string {
    return ret
 }
 
+
 // Since Genius API is whack, we need to scrape the data from the website
 func GetSongLyrics(apiPath string)  {
-
   var data interface{}
   accessToken := os.Getenv("GENIUS_ACCESS_TOKEN")
   authEndpoint := apiPath + "?access_token=" + accessToken
   fmt.Println("GET:", authEndpoint)
+
   res, err := http.Get(authEndpoint)
   if err != nil {
     panic(err.Error())
@@ -83,6 +83,7 @@ func GetSongLyrics(apiPath string)  {
    scrapeLyrics(websiteUrl)
 }
 
+
 // Scrape Migos songs from http://www.azlyrics.com/m/migos.html
 func scrapeTrackList(websiteUrl string) []string {
   doc, err := goquery.NewDocument(websiteUrl)
@@ -97,12 +98,19 @@ func scrapeTrackList(websiteUrl string) []string {
   return trackList
 }
 
+
 // Scrape lyrics using goQuery
 func scrapeLyrics(websiteUrl string) {
+  fmt.Println("\n === Scraping from", websiteUrl, "\n")
   doc, err := goquery.NewDocument(websiteUrl)
   if err != nil {
     panic(err.Error())
   }
 
   fmt.Println(doc.Find(".lyrics").Text())
+}
+
+func dasherize(track string) string {
+  r := strings.NewReplacer(" ", "-", "(", "", ")", "", "'", "", ".", "", "&", "and")
+  return r.Replace(track)
 }
