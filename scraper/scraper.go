@@ -2,6 +2,7 @@ package scraper
 
 
 import (
+  "bytes"
   "fmt"
   "log"
   "strings"
@@ -60,19 +61,36 @@ func dasherize(track string) string {
 }
 
 
-// Format lyrics into a 2-D array
-// Returns Array.<Array.<string>>
+// // Format lyrics into a 2-D array
+// // Returns Array.<Array.<string>>
+// func formatLyrics(lyrics string) {
+//   var lyricsArr [][]string
+//   fmt.Println(lyrics)
+//
+//   for _, line := range strings.Split(lyrics, "\n") {
+//     // Test for unwanted lines
+//     line = strings.Trim(line, " ")
+//     if len(line) > 0 && string(line[0]) != "[" {
+//       tempRow := strings.Split(line, " ")
+//       lyricsArr = append(lyricsArr, tempRow)
+//     }
+//   }
+//   fmt.Println(lyricsArr)
+// }
+
+
+
+// Formats lyrics into a cleaned-up string
+// Returns string
 func formatLyrics(lyrics string) {
-  var lyricsArr [][]string
-  fmt.Println(lyrics)
+  var retLyrics bytes.Buffer
 
   for _, line := range strings.Split(lyrics, "\n") {
     // Test for unwanted lines
     line = strings.Trim(line, " ")
     if len(line) > 0 && string(line[0]) != "[" {
-      tempRow := strings.Split(line, " ")
-      lyricsArr = append(lyricsArr, tempRow)
+      retLyrics.WriteString(line + " ")
     }
   }
-  fmt.Println(lyricsArr)
+  fmt.Println(retLyrics.String())
 }
