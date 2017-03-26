@@ -69,10 +69,11 @@ func formatLyrics(lyrics string) string {
 	var retLyrics bytes.Buffer
 
 	for _, line := range strings.Split(lyrics, "\n") {
-    // Test for unwanted lines
-		line = strings.Trim(line, " ")
-		if len(line) > 0 && string(line[0]) != "[" {
-			retLyrics.WriteString(line + " ")
+		lowerLine := strings.ToLower(line)
+    	// Test for unwanted lines
+		lowerLine = strings.Trim(lowerLine, " ")
+		if len(lowerLine) > 0 && string(lowerLine[0]) != "[" {
+			retLyrics.WriteString(lowerLine + " ")
 		}
 	}
 	return retLyrics.String()
