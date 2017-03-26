@@ -8,17 +8,13 @@ package ml
 import "fmt"
 
 /*  TransitionTable
- * A 27x27 matrix M (26 letters + space) where M[i,j] represents the likelihood
- * of transitioning from the ith letter of the alphabet to the jth letter of
- * the alphabet.
+ * A 28x28 matrix M (26 letters + space + apostrophe) where M[i,j] represents
+ * the likelihood of transitioning from the ith letter of the alphabet
+ * to the jth letter of the alphabet.
  * Initialized a zeroes matrix.
  */
-type TransitionTable [27][27]float64
+type TransitionTable [28][28]float64
 
-
-/**
-
- */
 func Train(song string, order int) {
 	var tt TransitionTable
 	AlphaLookup := map[byte]int{
@@ -49,6 +45,7 @@ func Train(song string, order int) {
 		'y': 24,
 		'z': 25,
 		' ': 26,
+		byte('\''): 27,
   	}
 
   	for i := range song {

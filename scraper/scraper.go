@@ -14,12 +14,14 @@ func Scrape(artistName string) []string {
 	var retArr []string
 	for _, track := range scrapeTrackList("http://www.azlyrics.com/" + string(artistName[0]) + "/" + artistName + ".html") {
     	if track != "" {
-      		geniusUrl := "https://genius.com/" + artistName + "-" + dasherize(track) + "-lyrics"
-      		songBuf.WriteString(scrapeLyrics(geniusUrl))
-      		retArr = append(retArr, songBuf.String())
+			geniusUrl := "https://genius.com/" + artistName + "-" + dasherize(track) + "-lyrics"
+			songBuf.WriteString(scrapeLyrics(geniusUrl))
+			retArr = append(retArr, songBuf.String())
+			break
     }
   }
-  return retArr
+	fmt.Println(retArr)
+	return retArr
 }
 
 
