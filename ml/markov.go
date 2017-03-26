@@ -15,6 +15,14 @@ import "fmt"
  */
 type TransitionTable [28][28]float64
 
+func normalize(tt *TransitionTable, length float64) {
+	for i := range tt  {
+		for j := range tt[i] {
+			tt[i][j] = tt[i][j]/length
+		}
+	}
+}
+
 func Train(song string, order int) {
 	var tt TransitionTable
 	AlphaLookup := map[byte]int{
@@ -51,12 +59,14 @@ func Train(song string, order int) {
   	for i := range song {
 		if i < len(song)-1 {
 			tt[AlphaLookup[song[i]]][AlphaLookup[song[i+1]]]++
-    		}
+		}
   	}
+
+	normalize(&tt, (float64)(len(song)))
 
   // Print out tt
   	for i := range tt {
-      		fmt.Println(tt[i] )
+      		fmt.Println( i, tt[i] )
 	}
 
 }
