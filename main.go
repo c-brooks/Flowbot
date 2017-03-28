@@ -20,7 +20,9 @@ func main() {
 
 	fmt.Println(artistName)
 	songArr := scraper.Scrape(artistName)
+	fmt.Println(songArr)
 	for song := range songArr {
 		ml.Train(songArr[song], 1)
 	}
+	//ml.Train("abcabcabcabcdddddddddddddddddd", 1)
 }
