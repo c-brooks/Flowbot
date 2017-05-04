@@ -17,9 +17,9 @@ func Scrape(artistName string) []string {
 			geniusUrl := "https://genius.com/" + artistName + "-" + dasherize(track) + "-lyrics"
 			songBuf.WriteString(scrapeLyrics(geniusUrl))
 			retArr = append(retArr, songBuf.String())
-			if track == "Bando" {
+			//if track == "Bando" {
 				break
-			}
+			//}
 		}
 	}
 	fmt.Println(retArr)
