@@ -7,159 +7,97 @@ package ml
 
 import (
 	"fmt"
+	"strings"
 )
 
-/*  TransitionTable
- * A 28x28 matrix M (26 letters + space + apostrophe) where M[i,j] represents
- * the likelihood of transitioning from the ith letter of the alphabet
- * to the jth letter of the alphabet.
- * Initialized a zeroes matrix.
- */
-type TransitionTable [28][28]float64
 
-func normalize(tt *TransitionTable, length float64) {
-	for i := range tt  {
-		for j := range tt[i] {
-			tt[i][j] = tt[i][j]/length
-		}
-	}
-}
+/*  TransitionTable
+ * map[string]^Order float
+ * EG: 2nd-order model
+ * {
+ * 	word: {
+ * 	 word: occurrence,
+ * 	 }
+ * }
+ */
+
+type TransitionTable map[string]map[string]map[string]float64
+
+//func normalize(tt TransitionTable, length float64) {
+//	for key, val := range tt  {
+//		for j := range tt[key] {
+//			tt[i][j] = tt[i][j]/length
+//		}
+//	}
+//}
 
 func Train(song string, order int) {
-	var tt TransitionTable
-	AlphaLookup := map[byte]int{
-		'a': 0,
-		'b': 1,
-		'c': 2,
-		'd': 3,
-		'e': 4,
-		'f': 5,
-		'g': 6,
-		'h': 7,
-		'i': 8,
-		'j': 9,
-		'k': 10,
-		'l': 11,
-		'm': 12,
-		'n': 13,
-		'o': 14,
-		'p': 15,
-		'q': 16,
-		'r': 17,
-		's': 18,
-		't': 19,
-		'u': 20,
-		'v': 21,
-		'w': 22,
-		'x': 23,
-		'y': 24,
-		'z': 25,
-		' ': 26,
-		byte('\''): 27,
-  	}
+	// This is super cheap so IDK about looping twice
+	words := strings.Split(song, " ")
+	tt := make(TransitionTable)
 
-  	for i := range song {
-		if i < len(song)-1 {
-			tt[AlphaLookup[song[i]]][AlphaLookup[song[i+1]]]++
+	for i := range words {
+
+		if i < order + 1 {
+			// Special case when just starting, I don't care for now.
+			//tt["\n"] = make(map[string]map[string]float64)
+			//tt["\n"]["\n"][words[i]] = 1
+		} else {
+			fmt.Println(words[i-2], words[i-1], words[i])
+
+			if _, ok1 := tt[words[i-1]]; ok1 {
+				if _, ok2 := tt[words[i-1]][words[i]]; ok2 {
+					if _, ok3 := tt[words[i-2]][words[i-1]][words[i]]; ok3 {
+						tt[words[i-2]][words[i-1]][words[i]]++
+					} else {
+						tt[words[i-2]] = make(map[string]map[string]float64)
+						tt[words[i-2]][words[i-1]] = make(map[string]float64)
+						tt[words[i-2]][words[i-1]][words[i]] = 1
+					}
+				}
+			} else {
+				tt[words[i-2]] = make(map[string]map[string]float64)
+				tt[words[i-2]][words[i-1]] = make(map[string]float64)
+				tt[words[i-2]][words[i-1]][words[i]] = 1
+			}
 		}
-  	}
+	}
 
 	//normalize(&tt, (float64)(len(song)))
 
-  // Print out tt
-  //	for i := range tt {
-	//	fmt.Println( i, tt[i] )
-	//}
-
-	Predict(&tt)
+	Predict(tt)
 }
 
-/** @param TransitionTable
-  *
-  */
-func Predict(tt *TransitionTable) {
+/**
+ * Predict
+ * @param {TransitionTable} tt
+ *
+ * Approach (so I don't forget):
+ * Take occurence of result
+ * If second order prediction yields results, double them.
+ * If third order prediction yields results, triple them.
+ * ...etc
+ */
 
-	AlphaLookup := map[byte]int{
-		'a': 0,
-		'b': 1,
-		'c': 2,
-		'd': 3,
-		'e': 4,
-		'f': 5,
-		'g': 6,
-		'h': 7,
-		'i': 8,
-		'j': 9,
-		'k': 10,
-		'l': 11,
-		'm': 12,
-		'n': 13,
-		'o': 14,
-		'p': 15,
-		'q': 16,
-		'r': 17,
-		's': 18,
-		't': 19,
-		'u': 20,
-		'v': 21,
-		'w': 22,
-		'x': 23,
-		'y': 24,
-		'z': 25,
-		' ': 26,
-		byte('\''): 27,
-	}
 
-	NumLookup := map[int]byte{
-		 0:  'a',
-		 1:  'b',
-		 2:  'c',
-		 3:  'd',
-		 4:  'e',
-		 5:  'f',
-		 6:  'g',
-		 7:  'h',
-		 8:  'i',
-		 9:  'j',
-		 10: 'k',
-		 11: 'l',
-		 12: 'm',
-		 13: 'n',
-		 14: 'o',
-		 15: 'p',
-		 16: 'q',
-		 17: 'r',
-		 18: 's',
-		 19: 't',
-		 20: 'u',
-		 21: 'v',
-		 22: 'w',
-		 23: 'x',
-		 24: 'y',
-		 25: 'z',
-		 26: ' ',
-		 27: byte('\''),
-	}
-
-	letter := byte('n')
-	var max float64
-	var maxAddr int
-	var ret []byte
-	for i := 0; i < 100; i++ {
-		// find max score in letter's row in tt
-
-		for j := range tt[AlphaLookup[letter]] {
-			if tt[AlphaLookup[letter]][j] > max {
-				max = tt[AlphaLookup[letter]][j]
-				maxAddr = j
+func Predict(tt TransitionTable) {
+		var max float64
+		var ret []string
+		for i := 0; i < 50; i++ {
+			// find max score for word in tt
+			for _, val1 := range tt {
+				for _, val2 := range val1 {
+					for thirdWord, occ := range val2 {
+						if occ > max {
+							max = occ
+							ret = append(ret, thirdWord)
+							max = 0
+						}
+					}
+				}
 			}
 		}
-		letter = NumLookup[maxAddr]
-
-		fmt.Println(string(letter))
-		ret = append(ret, letter)
-		max = 0
-		maxAddr = 0
-	}
-	fmt.Println(string(ret))
+	fmt.Println(tt)
+	fmt.Println("======================")
+	fmt.Println(ret)
 }
