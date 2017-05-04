@@ -1,41 +1,42 @@
 package scraper
 
-
 import (
 	"bytes"
 	"fmt"
+	"github.com/PuerkitoBio/goquery"
 	"log"
 	"strings"
-	"github.com/PuerkitoBio/goquery"
 )
 
 func Scrape(artistName string) []string {
 	var songBuf bytes.Buffer
 	var retArr []string
+
 	for _, track := range scrapeTrackList("http://www.azlyrics.com/" + string(artistName[0]) + "/" + artistName + ".html") {
-    	if track != "" {
+		if track != "" {
 			geniusUrl := "https://genius.com/" + artistName + "-" + dasherize(track) + "-lyrics"
 			songBuf.WriteString(scrapeLyrics(geniusUrl))
 			retArr = append(retArr, songBuf.String())
-			break
-    }
-  }
+			if track == "Bando" {
+				break
+			}
+		}
+	}
 	fmt.Println(retArr)
 	return retArr
 }
-
 
 // Scrape Migos songs from http://www.azlyrics.com/m/migos.html
 // Return a list of tracks
 func scrapeTrackList(websiteUrl string) []string {
 	fmt.Println("GET [", websiteUrl, "]\n")
-  	doc, err := goquery.NewDocument(websiteUrl)
-  	if err != nil {
+	doc, err := goquery.NewDocument(websiteUrl)
+	if err != nil {
 		panic(err.Error())
 	}
 
 	var trackList []string
-	doc.Find("#listAlbum > a").Each(func (i int, s *goquery.Selection) {
+	doc.Find("#listAlbum > a").Each(func(i int, s *goquery.Selection) {
 		trackList = append(trackList, s.Text())
 	})
 	if len(trackList) == 0 {
@@ -43,7 +44,6 @@ func scrapeTrackList(websiteUrl string) []string {
 	}
 	return trackList
 }
-
 
 // Scrape lyrics from Genius
 // Print to standard output
@@ -69,10 +69,13 @@ func formatLyrics(lyrics string) string {
 	var retLyrics bytes.Buffer
 
 	for _, line := range strings.Split(lyrics, "\n") {
+		fmt.Println(line)
 		lowerLine := strings.ToLower(line)
-    	// Test for unwanted lines
+		// Test for unwanted lines
 		lowerLine = strings.Trim(lowerLine, " ")
-		if len(lowerLine) > 0 && string(lowerLine[0]) != "[" {
+		if len(lowerLine) > 0 && string(lowerLine[0]) != "[" && string(lowerLine[0]) != "(" {
+			// Separate commas into their own words
+			lowerLine = strings.NewReplacer(",", " ,").Replace(lowerLine)
 			retLyrics.WriteString(lowerLine + " ")
 		}
 	}

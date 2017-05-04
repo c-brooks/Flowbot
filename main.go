@@ -2,10 +2,11 @@
 package main
 
 import (
-	"os"
-	"github.com/c-Brooks/bADLIB/scraper"
 	"fmt"
 	"github.com/c-Brooks/bADLIB/ml"
+	"github.com/c-Brooks/bADLIB/scraper"
+	"os"
+	"strings"
 )
 
 func main() {
@@ -21,8 +22,6 @@ func main() {
 	fmt.Println(artistName)
 	songArr := scraper.Scrape(artistName)
 	fmt.Println(songArr)
-	for song := range songArr {
-		ml.Train(songArr[song], 1)
-	}
-	//ml.Train("abcabcabcabcdddddddddddddddddd", 1)
+	songs := strings.Join(songArr, "\n")
+		ml.Train(songs, 3)
 }
