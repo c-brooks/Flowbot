@@ -11,40 +11,45 @@ import (
 )
 
 
-/*  TransitionTable
- * A tree of length [order]
- * EG: 2nd-order model
- * {
- * 	word: {
- * 	 word, occurrence,
- * 	 children: {
- *		word, occurrence,
- *      children: nil
- * 	 }
- * }
+/**
+ *	@type {map[string]*TransitionNode} RootTable
+ *
+ *	Entry points for forward traversal of the map of TransitionNodes
+ *	Maps words -> pointers to the node (unique) that contains them
  */
+type RootTable map[string]*TransitionNode
 
-type TransitionTable map[string]*TransitionNode
+/**
+ *	@type {map[string][]*TransitionNode} LeafTable
+ *
+ *	Entry points for backward traversal of the map of TransitionNodes
+ *	Maps words -> pointers to a slice of nodes that contain them
+ */
+type LeafTable map[string][]*TransitionNode
 
+
+/**
+ *	@type {struct} TransitionNode
+ *
+ *	@member {map[string]*TransitionNode} children - Maps previous word -> pointer to its node
+ *	@member {*TransitionNode}            parent   - Pointer to the node containing the next word
+ *	@member {int}                        occ      - The occurrence of the node coming from its parent
+ *	@member {string}                     word     - The value of the word
+ */
 type TransitionNode struct {
+	children map[string]*TransitionNode
+	parent *TransitionNode
+
 	occ int
 	word string
-	children map[string]*TransitionNode
 }
 
 
 
-//func normalize(tt TransitionTable, length float64) {
-//	for key, val := range tt  {
-//		for j := range tt[key] {
-//			tt[i][j] = tt[i][j]/length
-//		}
-//	}
-//}
 
 func Train(song string, order int) {
 	words := strings.Split(song, " ")
-	tt := make(TransitionTable)
+	tt := make(RootTable)
 
 	for i := range words {
 		var root *TransitionNode
@@ -59,6 +64,7 @@ func Train(song string, order int) {
 				// Make a new root TransitionNode
 				root = &TransitionNode{
 					children: nil,
+					parent:   nil,
 					occ:      1,
 					word:     words[i],
 				}
@@ -89,7 +95,7 @@ func Train(song string, order int) {
 
 /**
  * Predict
- * @param {TransitionTable} tt
+ * @param {RootTable} tt
  *
  * Approach (so I don't forget):
  * Take occurrence of result
@@ -101,7 +107,7 @@ func Train(song string, order int) {
 
 // Traverse the tree until its leaf for each letter to sum up it's occurrences
 // Weight more "specific" occurrences higher
-//func Predict(tt TransitionTable) {
+// func Predict(tt RootTable) {
 //		var max int
 //		var ret []string
 //		for i := 0; i < 50; i++ {
@@ -134,6 +140,7 @@ func (tn *TransitionNode) Add(word string) {
 	}
 	tn.children[word] = &TransitionNode{
 		children: nil,
+		parent:   tn,
 		occ:      1,
 		word:     word,
 	}
@@ -145,7 +152,7 @@ func (tn *TransitionNode) Add(word string) {
  * Given a node, checks if a child exists in the children map
  * with the specified word
  */
-func (tn TransitionNode)ChildExists(word string) bool {
+func (tn TransitionNode) ChildExists(word string) bool {
 	if _, ok := tn.children[word]; ok {
 		return true
 	}
