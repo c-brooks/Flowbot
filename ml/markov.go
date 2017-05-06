@@ -49,18 +49,17 @@ type TransitionNode struct {
 
 func Train(song string, order int) {
 	words := strings.Split(song, " ")
-	tt := make(RootTable)
+	rt := make(RootTable)
+	lt := make(LeafTable)
 
 	for i := range words {
 		var root *TransitionNode
 
 		if i < order + 1 {
 			// Special case when just starting, I don't care for now.
-			//tt["\n"] = make(map[string]map[string]float64)
-			//tt["\n"]["\n"][words[i]] = 1
 		} else {
 
-			if _, ok := tt[words[i]]; !ok {
+			if _, ok := rt[words[i]]; !ok {
 				// Make a new root TransitionNode
 				root = &TransitionNode{
 					children: nil,
@@ -68,11 +67,11 @@ func Train(song string, order int) {
 					occ:      1,
 					word:     words[i],
 				}
-				tt[words[i]] = root
+				rt[words[i]] = root
 			} else {
 				// TransitionNode with that word already exists
-				tt[words[i]].occ ++
-				root = tt[words[i]]
+				rt[words[i]].occ ++
+				root = rt[words[i]]
 			}
 
 			traverser := root
@@ -88,9 +87,12 @@ func Train(song string, order int) {
 				traverser = traverser.children[words[i-j]]
 				fmt.Println( "\t", traverser.occ, traverser.word, traverser.children)
 			}
+			// When traverser is at leaf node, add it to LeafTable
+			lt[traverser.word] = append(lt[traverser.word], traverser)
 		}
 	}
-//	Predict(tt)
+	fmt.Println(lt)
+	Predict(lt)
 }
 
 /**
@@ -107,27 +109,29 @@ func Train(song string, order int) {
 
 // Traverse the tree until its leaf for each letter to sum up it's occurrences
 // Weight more "specific" occurrences higher
-// func Predict(tt RootTable) {
-//		var max int
-//		var ret []string
-//		for i := 0; i < 50; i++ {
-//			// find max score for word in tt
-//			for _, val1 := range tt {
-//				for _, val2 := range val1.children {
-//					for _, thirdWord := range val2.children {
-//						if thirdWord.occ > max {
-//							max = thirdWord.occ
-//							ret = append(ret, thirdWord.word)
-//						}
-//					}
-//					max = 0
-//				}
-//			}
-//		}
-//	fmt.Println(tt)
-//	fmt.Println("======================")
-//	fmt.Println(ret)
-//}
+func Predict(lt LeafTable) {
+	var max int
+	var ret []string
+
+	node := findFirst(lt)
+	for i := 0; i < 50; i++ {
+		// find max score for word in lt
+		for _, val1 := range node.children {
+			for _, val2 := range val1.children {
+				for _, thirdWord := range val2.children {
+					if thirdWord.occ > max {
+						max = thirdWord.occ
+						ret = append(ret, thirdWord.word)
+					}
+				}
+				max = 0
+			}
+		}
+	}
+	fmt.Println(lt)
+	fmt.Println("======================")
+	fmt.Println(ret)
+}
 
 /**
  * Add
@@ -157,4 +161,19 @@ func (tn TransitionNode) ChildExists(word string) bool {
 		return true
 	}
 	return false
+}
+
+/**
+ *	findFirst
+ *	@param {LeafTable} lt
+ *
+ *	For now, this just returns a random entry
+ */
+func findFirst(lt LeafTable) *TransitionNode {
+	for _, v := range lt {
+		if len(v) > 0 {
+			return v[0]
+		}
+	}
+	return nil
 }
