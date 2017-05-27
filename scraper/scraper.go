@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"sync"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -13,20 +14,43 @@ import (
 // Scrape is the entrypoint for the scraping routine
 // It takes an artist name and returns an array of songs, (cleaned), as strings.
 func Scrape(artistName string) []string {
-	var songBuf bytes.Buffer
 	var retArr []string
+	// var wg sync.WaitGroup
 
-	for i, track := range scrapeTrackList("http://www.azlyrics.com/" + string(artistName[0]) + "/" + artistName + ".html") {
-		if track != "" {
+	successReqs, failReqs := 0, 0
+
+	resc, errc := make(chan string), make(chan error)
+
+	songList := scrapeTrackList("http://www.azlyrics.com/" + string(artistName[0]) + "/" + artistName + ".html")
+
+	fmt.Println(len(songList))
+	for _, track := range songList {
+
+		go func(track string) {
 			geniusURL := "https://genius.com/" + artistName + "-" + dasherize(track) + "-lyrics"
-			songBuf.WriteString(scrapeLyrics(geniusURL))
-			retArr = append(retArr, songBuf.String())
-		}
-		if i > 30 {
-			break
+			lyrics, err := scrapeLyrics(geniusURL)
+			if err != nil {
+				failReqs++
+				errc <- err
+				return
+			}
+			successReqs++
+			resc <- lyrics
+		}(track)
+	}
+
+	for i := 0; i < len(songList); i++ {
+		select {
+		case res := <-resc:
+			retArr = append(retArr, res)
+		case err := <-errc:
+			fmt.Println(err)
 		}
 	}
-	fmt.Println(retArr)
+
+	fmt.Println("Done.")
+	fmt.Println("SUCCESS:  . . . . . . . . .", successReqs)
+	fmt.Println("FAIL: . . . . . . . . . . .", failReqs)
 	return retArr
 }
 
@@ -36,7 +60,7 @@ func scrapeTrackList(websiteURL string) []string {
 	fmt.Println("GET [", websiteURL, "]")
 	doc, err := goquery.NewDocument(websiteURL)
 	if err != nil {
-		panic(err.Error())
+		log.Println(err.Error())
 	}
 
 	var trackList []string
@@ -44,20 +68,20 @@ func scrapeTrackList(websiteURL string) []string {
 		trackList = append(trackList, s.Text())
 	})
 	if len(trackList) == 0 {
-		log.Fatal("No tracks found!") // exit
+		log.Println("No tracks found!") // exit
 	}
 	return trackList
 }
 
 // Scrape lyrics from Genius
 // Print to standard output
-func scrapeLyrics(websiteURL string) string {
+func scrapeLyrics(websiteURL string) (string, error) {
 	fmt.Println("\t GET [", websiteURL, "]")
 	doc, err := goquery.NewDocument(websiteURL)
 	if err != nil {
-		panic(err.Error())
+		return "", err
 	}
-	return formatLyrics(doc.Find(".lyrics").Text())
+	return formatLyrics(doc.Find(".lyrics").Text()), err
 }
 
 // Change the track name into a url-friendly form
@@ -73,7 +97,6 @@ func formatLyrics(lyrics string) string {
 	var retLyrics bytes.Buffer
 
 	for _, line := range strings.Split(lyrics, "\n") {
-		fmt.Println(line)
 		lowerLine := strings.ToLower(line)
 		// Test for unwanted lines
 		lowerLine = strings.Trim(lowerLine, " ")
@@ -84,4 +107,29 @@ func formatLyrics(lyrics string) string {
 		}
 	}
 	return retLyrics.String()
+}
+
+////////////////////////////////////////////////////////
+///////////////////// NOT USED /////////////////////////
+////////////////////////////////////////////////////////
+
+// ConcurrentSlice is a concurrency-safe slice
+// to be shared between goroutines
+type ConcurrentSlice struct {
+	sync.RWMutex
+	items []string
+}
+
+// ConcurrentSliceItem is an element of a ConcurrentSlice
+type ConcurrentSliceItem struct {
+	Index int
+	Value interface{}
+}
+
+// Append appends an item to the concurrent slice
+func (cs *ConcurrentSlice) Append(item string) {
+	cs.Lock()
+	defer cs.Unlock()
+
+	cs.items = append(cs.items, item)
 }

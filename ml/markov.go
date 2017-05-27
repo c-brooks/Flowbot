@@ -29,8 +29,9 @@ type TransitionNode struct {
 	word string
 }
 
-// Train Trains a Markov tree
+// Train trains a Markov tree
 func Train(song string, order int) {
+	fmt.Println("Training...")
 	words := strings.Split(song, " ")
 	rt := make(RootTable)
 	lt := make(LeafTable)
@@ -73,12 +74,14 @@ func Train(song string, order int) {
 			lt[traverser.word] = append(lt[traverser.word], traverser)
 		}
 	}
+	fmt.Println("Training complete.")
 	predict(lt)
 }
 
 // Traverse the tree until its leaf for each letter to sum up its occurrences
 // Weight more "specific" occurrences higher
 func predict(lt LeafTable) {
+	fmt.Println("Predicting...")
 	max := 0
 	var ret []string
 	var currentBestNode *TransitionNode
