@@ -10,9 +10,9 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-// Scrape is the entrypoint for the scraping routine
-// It takes an artist name and returns an array of songs, (cleaned), as strings.
-func Scrape(artistName string) []string {
+// GetByArtist takes an artist name
+// and returns an array of songs, (cleaned), as strings.
+func GetByArtist(artistName string) []string {
 	var retArr []string
 	successReqs, failReqs := 0, 0
 	resc, errc := make(chan string), make(chan error)

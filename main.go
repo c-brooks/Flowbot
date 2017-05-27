@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/c-Brooks/bADLIB/ml"
-	"github.com/c-Brooks/bADLIB/scraper"
+	"github.com/c-Brooks/Flowbot/ml"
+	"github.com/c-Brooks/Flowbot/scraper"
 )
 
 func main() {
@@ -21,7 +21,7 @@ func main() {
 	}
 
 	fmt.Println(artistName)
-	songArr := scraper.Scrape(artistName)
+	songArr := scraper.GetByArtist(artistName)
 	fmt.Println(songArr)
 	songs := strings.Join(songArr, "\n")
 	ml.Train(songs, 3)
