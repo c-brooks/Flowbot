@@ -1,12 +1,13 @@
-// main.go is the entry point for the program.
+// Package main is the entry point for the program.
 package main
 
 import (
 	"fmt"
-	"github.com/c-Brooks/bADLIB/ml"
-	"github.com/c-Brooks/bADLIB/scraper"
 	"os"
 	"strings"
+
+	"github.com/c-Brooks/bADLIB/ml"
+	"github.com/c-Brooks/bADLIB/scraper"
 )
 
 func main() {
@@ -23,5 +24,5 @@ func main() {
 	songArr := scraper.Scrape(artistName)
 	fmt.Println(songArr)
 	songs := strings.Join(songArr, "\n")
-		ml.Train(songs, 3)
+	ml.Train(songs, 3)
 }
