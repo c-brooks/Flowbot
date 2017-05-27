@@ -1,25 +1,29 @@
+// Package scraper contains routines to scrape song data
 package scraper
 
 import (
 	"bytes"
 	"fmt"
-	"github.com/PuerkitoBio/goquery"
 	"log"
 	"strings"
+
+	"github.com/PuerkitoBio/goquery"
 )
 
+// Scrape is the entrypoint for the scraping routine
+// It takes an artist name and returns an array of songs, (cleaned), as strings.
 func Scrape(artistName string) []string {
 	var songBuf bytes.Buffer
 	var retArr []string
 
-	for _, track := range scrapeTrackList("http://www.azlyrics.com/" + string(artistName[0]) + "/" + artistName + ".html") {
+	for i, track := range scrapeTrackList("http://www.azlyrics.com/" + string(artistName[0]) + "/" + artistName + ".html") {
 		if track != "" {
-			geniusUrl := "https://genius.com/" + artistName + "-" + dasherize(track) + "-lyrics"
-			songBuf.WriteString(scrapeLyrics(geniusUrl))
+			geniusURL := "https://genius.com/" + artistName + "-" + dasherize(track) + "-lyrics"
+			songBuf.WriteString(scrapeLyrics(geniusURL))
 			retArr = append(retArr, songBuf.String())
-			//if track == "Bando" {
-				break
-			//}
+		}
+		if i > 30 {
+			break
 		}
 	}
 	fmt.Println(retArr)
@@ -28,9 +32,9 @@ func Scrape(artistName string) []string {
 
 // Scrape Migos songs from http://www.azlyrics.com/m/migos.html
 // Return a list of tracks
-func scrapeTrackList(websiteUrl string) []string {
-	fmt.Println("GET [", websiteUrl, "]\n")
-	doc, err := goquery.NewDocument(websiteUrl)
+func scrapeTrackList(websiteURL string) []string {
+	fmt.Println("GET [", websiteURL, "]")
+	doc, err := goquery.NewDocument(websiteURL)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -47,9 +51,9 @@ func scrapeTrackList(websiteUrl string) []string {
 
 // Scrape lyrics from Genius
 // Print to standard output
-func scrapeLyrics(websiteUrl string) string {
-	fmt.Println("\t GET [", websiteUrl, "]\n")
-	doc, err := goquery.NewDocument(websiteUrl)
+func scrapeLyrics(websiteURL string) string {
+	fmt.Println("\t GET [", websiteURL, "]")
+	doc, err := goquery.NewDocument(websiteURL)
 	if err != nil {
 		panic(err.Error())
 	}
